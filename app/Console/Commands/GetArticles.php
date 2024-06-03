@@ -74,6 +74,7 @@ class GetArticles extends Command
     {
         $json = file_get_contents($file);
         $data = json_decode($json, true);
+        $data = collect($data)->unique('link')->toArray();
 
         if ($export === 'both') {
             $this->addArticlesToDataBase($data);
