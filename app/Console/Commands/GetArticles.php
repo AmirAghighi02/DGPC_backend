@@ -2,7 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Exports\ArticlesExport;
+use App\Models\Article;
 use Illuminate\Console\Command;
+use Maatwebsite\Excel\Facades\Excel;
 
 class GetArticles extends Command
 {
@@ -11,7 +14,7 @@ class GetArticles extends Command
      *
      * @var string
      */
-    protected $signature = 'articles:get {file=articles.json} {export=both}';
+    protected $signature = 'articles:get {file=articles_final.json} {export=both}';
 
     /**
      * The console command description.
@@ -51,12 +54,20 @@ class GetArticles extends Command
 
     protected function addArticlesToDataBase(array $data): void
     {
+        $data = array_map(function ($article) {
+            $article['category'] = $article['type'];
+            $article['tags'] = json_encode($article['tags']);
+            unset($article['type']);
 
+            return $article;
+        }, $data);
+
+        Article::query()->insert($data);
     }
 
-    protected function saveArticlesToExcel(array $data): void
+    protected function saveArticlesToExcel(): void
     {
-
+        Excel::store(new ArticlesExport(), 'articles_final.xlsx', 'exports');
     }
 
     protected function handleExport(string $file, string $export)
@@ -66,11 +77,11 @@ class GetArticles extends Command
 
         if ($export === 'both') {
             $this->addArticlesToDataBase($data);
-            $this->saveArticlesToExcel($data);
+            $this->saveArticlesToExcel();
         } elseif ($export === 'db') {
             $this->addArticlesToDataBase($data);
         } elseif ($export === 'excel') {
-            $this->saveArticlesToExcel($data);
+            $this->saveArticlesToExcel();
         }
     }
 }

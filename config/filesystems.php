@@ -56,6 +56,12 @@ return [
             'throw' => false,
         ],
 
+        'exports' => [
+            'driver' => 'local',
+            'root' => base_path('external/exports'),
+            'throw' => false,
+        ],
+
     ],
 
     /*
